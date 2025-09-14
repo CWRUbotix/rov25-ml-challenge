@@ -1,27 +1,11 @@
 from pathlib import Path
 from dataclasses import dataclass
+import argparse
 
 import cv2
 import numpy as np
 from cv2.typing import MatLike
 from ultralytics import YOLO
-
-# model = YOLO('runs/detect/train/weights/last.pt')
-
-# paths = tuple(Path('dataset/images/val').iterdir())
-
-# print(paths)
-
-# results = model(paths)
-
-# for path, result in zip(paths, results, strict=True):
-#     boxes = result.boxes  # Boxes object for bounding box outputs
-#     masks = result.masks  # Masks object for segmentation masks outputs
-#     keypoints = result.keypoints  # Keypoints object for pose outputs
-#     probs = result.probs  # Probs object for classification outputs
-#     obb = result.obb  # Oriented boxes object for OBB outputs
-#     #result.show()  # display to screen
-#     result.save(filename=f'predictions/{path.stem}.jpg')  # save to disk
 
 @dataclass
 class Prediction:
@@ -71,8 +55,8 @@ class PredictionSet:
         return annotated
 
 class Predictor:
-    def __init__(self):
-        self.model = YOLO('runs/detect/train/weights/last.pt')
+    def __init__(self, model_path: str):
+        self.model = YOLO(model_path)
 
     def predict_frame(self, img: MatLike, min_prob: float) -> PredictionSet:
         # https://github.com/ultralytics/ultralytics/blob/main/examples/YOLOv8-OpenCV-ONNX-Python/main.py
@@ -167,7 +151,17 @@ class Predictor:
         out.release()
 
 if __name__ == '__main__':
+    parser = argparse.ArgumentParser(prog='predict.py',
+                                     description='Make predictions with a Yolo model')
+
+    parser.add_argument('-m', '--model-path', required=True,
+                        help='Path to model .pt file (i.e. runs/detect/train/weights/last.pt)',
+                        default='runs/detect/train/weights/last.pt')
+
+    parsed_args = parser.parse_args()
+
     paths = tuple(Path('dataset/images/val').iterdir())
-    predictor = Predictor()
-    for path in (paths[0], ):
+    predictor = Predictor(parsed_args.model_path)
+    Path('output').mkdir(exist_ok=True)
+    for path in paths:
         predictor.annotate_img(path, Path('output') / path.name)
