@@ -1,7 +1,7 @@
 from pathlib import Path
 from dataclasses import dataclass
 import argparse
-from typing import Generator
+from collections.abc import Iterator
 
 import cv2
 import numpy as np
@@ -101,7 +101,7 @@ class Predictor:
         return self.predict_frame(img, min_score)
 
     def predict_video(self, video_path: Path, min_score: float = 0.25,
-                      frame_interval: int = 1) -> Generator[PredictionSet]:
+                      frame_interval: int = 1) -> Iterator[PredictionSet]:
         cap = cv2.VideoCapture(str(video_path))
         if not cap.isOpened():
             raise FileNotFoundError(f'Could read video {video_path}')
@@ -149,9 +149,12 @@ if __name__ == '__main__':
                         default='runs/detect/train/weights/last.pt')
 
     parsed_args = parser.parse_args()
-
-    paths = tuple(Path('dataset/images/val').iterdir())
     predictor = Predictor(parsed_args.model_path)
-    Path('output').mkdir(exist_ok=True)
-    for path in paths:
-        predictor.annotate_img(path, Path('output') / path.name)
+
+    # paths = tuple(Path('dataset/images/val').iterdir())
+    # Path('output').mkdir(exist_ok=True)
+    # for path in paths:
+    #     predictor.annotate_img(path, Path('output') / path.name)
+
+    path = Path('official.mp4')
+    predictor.annotate_video(path, frame_interval=5)
