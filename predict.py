@@ -67,7 +67,7 @@ class Predictor:
         xyxy = results[0].boxes.xyxy.cpu().numpy()
         xywhn = results[0].boxes.xywhn.cpu().numpy()
         scores = results[0].boxes.conf.cpu().numpy()
-        nms_indices = TorchNMS(
+        nms_indices = TorchNMS.nms(
             boxes=xyxy,
             scores=scores,
             iou_thres=0.5,
