@@ -66,9 +66,7 @@ class Predictor:
         prediction_set = PredictionSet([], img)
 
         for box, prob in zip(results[0].boxes.xywhn, results[0].boxes.conf, strict=True):
-            prediction = Prediction.fromXYWHN(box, prob)
-            prediction_set.predictions.append(prediction)
-            print(prediction)
+            prediction_set.predictions.append(Prediction.fromXYWHN(box, prob))
 
         return prediction_set
 
