@@ -113,8 +113,6 @@ class Predictor:
             if not ret:
                 break
             if frame_idx % frame_interval == 0:
-                frame = cv2.resize(frame, NETWORK_IMG_SHAPE,
-                                   interpolation=cv2.INTER_LINEAR)
                 yield self.predict_frame(frame, min_score)
             frame_idx += 1
         cap.release()
