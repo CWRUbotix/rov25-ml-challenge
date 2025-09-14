@@ -6,7 +6,7 @@ import cv2
 import numpy as np
 from cv2.typing import MatLike
 from ultralytics import YOLO
-from ultralytics.utils.ops import non_max_suppression
+from ultralytics.utils.nms import TorchNMS
 
 @dataclass
 class Prediction:
@@ -16,16 +16,16 @@ class Prediction:
     y2: float
     w: float
     h: float
-    prob: float
+    score: float
 
     @staticmethod
-    def fromXYWHN(xywhn: tuple[float, float, float, float], prob: float) -> 'Prediction':
+    def fromXYWHN(xywhn: tuple[float, float, float, float], score: float) -> 'Prediction':
         wr = xywhn[2] / 2
         hr = xywhn[3] / 2
         return Prediction(xywhn[0] - wr, xywhn[1] - hr,
                           xywhn[0] + wr, xywhn[1] + hr,
                           xywhn[2], xywhn[3],
-                          prob)
+                          score)
 
     def to_scaled_xyxy(self, img_width: int, img_height: int) -> tuple[int, int, int, int]:
         return (
@@ -49,7 +49,7 @@ class PredictionSet:
             img_height, img_width = annotated.shape[:2]
             x1, y1, x2, y2 = pred.to_scaled_xyxy(img_width, img_height)
             cv2.rectangle(annotated, (x1, y1), (x2, y2), (255, 0, 0), 2)
-            cv2.putText(annotated, f'{pred.prob * 100:.1f}%',
+            cv2.putText(annotated, f'{pred.score * 100:.1f}%',
                         (x1, y1 - 10), cv2.FONT_HERSHEY_SIMPLEX,
                         0.7, (0, 255, 0), 2)
         cv2.putText(annotated, f'Fish count: {len(self.predictions)}',
@@ -61,33 +61,32 @@ class Predictor:
     def __init__(self, model_path: str):
         self.model = YOLO(model_path)
 
-    def predict_frame(self, img: MatLike, min_prob: float) -> PredictionSet:
+    def predict_frame(self, img: MatLike, min_score: float) -> PredictionSet:
         results = self.model(img)
 
-        boxes = results[0].boxes.xywhn.cpu().numpy()
-        confs = results[0].boxes.conf.cpu().numpy()
-        nms_indices = non_max_suppression(
-            boxes=boxes,
-            scores=confs,
+        xyxy = results[0].boxes.xyxy.cpu().numpy()
+        xywhn = results[0].boxes.xywhn.cpu().numpy()
+        scores = results[0].boxes.conf.cpu().numpy()
+        nms_indices = TorchNMS(
+            boxes=xyxy,
+            scores=scores,
             iou_thres=0.5,
-            conf_thres=min_prob,
-            max_det=300
-        )[0]
+        )
 
         prediction_set = PredictionSet([], img)
 
-        for box, prob in zip(boxes[nms_indices], confs[nms_indices], strict=True):
-            prediction_set.predictions.append(Prediction.fromXYWHN(box, prob))
+        for box, score in zip(xywhn[nms_indices], scores[nms_indices], strict=True):
+            prediction_set.predictions.append(Prediction.fromXYWHN(box, score))
 
         return prediction_set
 
-    def predict_img(self, img_path: Path, min_prob: float = 0.25) -> PredictionSet:
+    def predict_img(self, img_path: Path, min_score: float = 0.25) -> PredictionSet:
         img = cv2.imread(str(img_path))
         if img is None:
             raise FileNotFoundError(f'Could read image {img_path}')
-        return self.predict_frame(img, min_prob)
+        return self.predict_frame(img, min_score)
 
-    def predict_video(self, video_path: Path, min_prob: float = 0.25,
+    def predict_video(self, video_path: Path, min_score: float = 0.25,
                       frame_interval: int = 1) -> list[PredictionSet]:
         cap = cv2.VideoCapture(str(video_path))
         if not cap.isOpened():
@@ -99,20 +98,20 @@ class Predictor:
             if not ret:
                 break
             if frame_idx % frame_interval == 0:
-                prediction_set = self.predict_frame(frame, min_prob)
+                prediction_set = self.predict_frame(frame, min_score)
                 results.append(prediction_set)
                 frame_idx += 1
         cap.release()
         return results
 
-    def annotate_img(self, input_path: Path, output_path: Path, min_prob: float = 0.25) -> None:
-        prediction_set = self.predict_img(input_path, min_prob)
+    def annotate_img(self, input_path: Path, output_path: Path, min_score: float = 0.25) -> None:
+        prediction_set = self.predict_img(input_path, min_score)
         result_img = prediction_set.annotated_img()
         cv2.imwrite(str(output_path), result_img)
 
-    def annotate_video(self, video_path: Path, min_prob: float = 0.25,
+    def annotate_video(self, video_path: Path, min_score: float = 0.25,
                       frame_interval: int = 1) -> None:
-        predictions = self.predict_video(video_path, min_prob, frame_interval)
+        predictions = self.predict_video(video_path, min_score, frame_interval)
         cap = cv2.VideoCapture(str(video_path))
         if not cap.isOpened():
             raise FileNotFoundError(f'Could read video {video_path}')
