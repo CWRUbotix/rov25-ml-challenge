@@ -1,6 +1,7 @@
 from pathlib import Path
 from dataclasses import dataclass
 import argparse
+from typing import Generator
 
 import cv2
 import numpy as np
@@ -45,12 +46,16 @@ class Prediction:
 class PredictionSet:
     predictions: list[Prediction]
     img: MatLike
+    img_og_shape: MatLike
 
     def annotated_img(self, resize_shape_wh: tuple[int, int] | None = None) -> MatLike:
-        annotated = self.img.copy()
         if resize_shape_wh is not None:
+            annotated = self.img.copy()
             annotated = cv2.resize(annotated, resize_shape_wh,
                                    interpolation=cv2.INTER_LINEAR)
+        else:
+            annotated = self.img_og_shape
+
         for pred in self.predictions:
             img_height, img_width = annotated.shape[:2]
             x1, y1, x2, y2 = pred.to_scaled_xyxy(img_width, img_height)
@@ -69,7 +74,9 @@ class Predictor:
 
     def predict_frame(self, img: MatLike, min_score: float,
                       iou_threshold: float = 0.3) -> PredictionSet:
-        results = self.model(img)
+        network_img = cv2.resize(img, NETWORK_IMG_SHAPE, interpolation=cv2.INTER_LINEAR)
+
+        results = self.model(network_img)
 
         xyxy = results[0].boxes.xyxy
         xywhn = results[0].boxes.xywhn
@@ -80,7 +87,7 @@ class Predictor:
             iou_threshold=iou_threshold,
         )
 
-        prediction_set = PredictionSet([], img)
+        prediction_set = PredictionSet([], network_img, img)
 
         for box, score in zip(xywhn[nms_indices], scores[nms_indices], strict=True):
             prediction_set.predictions.append(Prediction.fromXYWHN(box, score))
@@ -94,11 +101,10 @@ class Predictor:
         return self.predict_frame(img, min_score)
 
     def predict_video(self, video_path: Path, min_score: float = 0.25,
-                      frame_interval: int = 1) -> list[PredictionSet]:
+                      frame_interval: int = 1) -> Generator[PredictionSet]:
         cap = cv2.VideoCapture(str(video_path))
         if not cap.isOpened():
             raise FileNotFoundError(f'Could read video {video_path}')
-        results = []
         frame_idx = 0
         while True:
             ret, frame = cap.read()
@@ -106,11 +112,9 @@ class Predictor:
                 break
             if frame_idx % frame_interval == 0:
                 frame.resize(NETWORK_IMG_SHAPE)
-                prediction_set = self.predict_frame(frame, min_score)
-                results.append(prediction_set)
                 frame_idx += 1
+                yield self.predict_frame(frame, min_score)
         cap.release()
-        return results
 
     def annotate_img(self, input_path: Path, output_path: Path, min_score: float = 0.25) -> None:
         prediction_set = self.predict_img(input_path, min_score)
