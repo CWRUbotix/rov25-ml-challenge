@@ -8,6 +8,9 @@ from cv2.typing import MatLike
 from ultralytics import YOLO
 from ultralytics.utils.nms import TorchNMS
 
+NETWORK_IMG_SHAPE = (640, 640)
+REAL_IMG_SHAPE = (1920, 1080)
+
 @dataclass
 class Prediction:
     x1: float
@@ -43,8 +46,11 @@ class PredictionSet:
     predictions: list[Prediction]
     img: MatLike
 
-    def annotated_img(self) -> MatLike:
+    def annotated_img(self, resize_shape_wh: tuple[int, int] | None = None) -> MatLike:
         annotated = self.img.copy()
+        if resize_shape_wh is not None:
+            annotated = cv2.resize(annotated, resize_shape_wh,
+                                   interpolation=cv2.INTER_LINEAR)
         for pred in self.predictions:
             img_height, img_width = annotated.shape[:2]
             x1, y1, x2, y2 = pred.to_scaled_xyxy(img_width, img_height)
@@ -61,7 +67,8 @@ class Predictor:
     def __init__(self, model_path: str):
         self.model = YOLO(model_path)
 
-    def predict_frame(self, img: MatLike, min_score: float) -> PredictionSet:
+    def predict_frame(self, img: MatLike, min_score: float,
+                      iou_threshold: float = 0.3) -> PredictionSet:
         results = self.model(img)
 
         xyxy = results[0].boxes.xyxy
@@ -70,7 +77,7 @@ class Predictor:
         nms_indices = TorchNMS.nms(
             boxes=xyxy,
             scores=scores,
-            iou_threshold=0.5,
+            iou_threshold=iou_threshold,
         )
 
         prediction_set = PredictionSet([], img)
@@ -98,6 +105,7 @@ class Predictor:
             if not ret:
                 break
             if frame_idx % frame_interval == 0:
+                frame.resize(NETWORK_IMG_SHAPE)
                 prediction_set = self.predict_frame(frame, min_score)
                 results.append(prediction_set)
                 frame_idx += 1
@@ -106,7 +114,7 @@ class Predictor:
 
     def annotate_img(self, input_path: Path, output_path: Path, min_score: float = 0.25) -> None:
         prediction_set = self.predict_img(input_path, min_score)
-        result_img = prediction_set.annotated_img()
+        result_img = prediction_set.annotated_img(REAL_IMG_SHAPE)
         cv2.imwrite(str(output_path), result_img)
 
     def annotate_video(self, video_path: Path, min_score: float = 0.25,
