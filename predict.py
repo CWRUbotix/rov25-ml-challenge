@@ -6,6 +6,7 @@ import cv2
 import numpy as np
 from cv2.typing import MatLike
 from ultralytics import YOLO
+from ultralytics.utils.ops import non_max_suppression
 
 @dataclass
 class Prediction:
@@ -63,9 +64,19 @@ class Predictor:
     def predict_frame(self, img: MatLike, min_prob: float) -> PredictionSet:
         results = self.model(img)
 
+        boxes = results[0].boxes.xywhn.cpu().numpy()
+        confs = results[0].boxes.conf.cpu().numpy()
+        nms_indices = non_max_suppression(
+            boxes=boxes,
+            scores=confs,
+            iou_thres=0.5,
+            conf_thres=min_prob,
+            max_det=300
+        )[0]
+
         prediction_set = PredictionSet([], img)
 
-        for box, prob in zip(results[0].boxes.xywhn, results[0].boxes.conf, strict=True):
+        for box, prob in zip(boxes[nms_indices], confs[nms_indices], strict=True):
             prediction_set.predictions.append(Prediction.fromXYWHN(box, prob))
 
         return prediction_set
