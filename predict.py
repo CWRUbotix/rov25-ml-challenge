@@ -29,7 +29,7 @@ class Prediction:
     def to_scaled_xyxy(self, img_width: int, img_height: int) -> tuple[int, int, int, int]:
         return (
             int(self.x1 * img_width),
-            int(self.y2 * img_height),
+            int(self.y1 * img_height),
             int(self.x2 * img_width),
             int(self.y2 * img_height)
         )
@@ -66,7 +66,9 @@ class Predictor:
         prediction_set = PredictionSet([], img)
 
         for box, prob in zip(results[0].boxes.xywhn, results[0].boxes.conf, strict=True):
-            prediction_set.predictions.append(Prediction.fromXYWHN(box, prob))
+            prediction = Prediction.fromXYWHN(box, prob)
+            prediction_set.predictions.append(prediction)
+            print(prediction)
 
         return prediction_set
 
