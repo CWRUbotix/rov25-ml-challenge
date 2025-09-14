@@ -1,7 +1,7 @@
 from ultralytics import YOLO
 
 # model = YOLO('yolov8n.pt')
-model = YOLO('runs/detect/train3/weights/last.pt')
+model = YOLO('runs/detect/train/weights/last.pt')
 
 metrics = model.val(device=0)  # no arguments needed, dataset and settings remembered
 print(metrics.box.map)  # map50-95
