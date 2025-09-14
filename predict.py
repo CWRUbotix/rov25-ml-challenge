@@ -64,9 +64,9 @@ class Predictor:
     def predict_frame(self, img: MatLike, min_score: float) -> PredictionSet:
         results = self.model(img)
 
-        xyxy = results[0].boxes.xyxy.cpu().numpy()
-        xywhn = results[0].boxes.xywhn.cpu().numpy()
-        scores = results[0].boxes.conf.cpu().numpy()
+        xyxy = results[0].boxes.xyxy
+        xywhn = results[0].boxes.xywhn
+        scores = results[0].boxes.conf
         nms_indices = TorchNMS.nms(
             boxes=xyxy,
             scores=scores,
