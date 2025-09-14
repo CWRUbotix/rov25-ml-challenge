@@ -1,0 +1,2 @@
+deviceQuery
+nvcc --version
