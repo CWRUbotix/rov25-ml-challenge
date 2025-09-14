@@ -115,8 +115,8 @@ class Predictor:
             if frame_idx % frame_interval == 0:
                 frame = cv2.resize(frame, NETWORK_IMG_SHAPE,
                                    interpolation=cv2.INTER_LINEAR)
-                frame_idx += 1
                 yield self.predict_frame(frame, min_score)
+            frame_idx += 1
         cap.release()
 
     def annotate_img(self, input_path: Path, output_path: Path, min_score: float = 0.25) -> None:
@@ -130,11 +130,11 @@ class Predictor:
         cap = cv2.VideoCapture(str(video_path))
         if not cap.isOpened():
             raise FileNotFoundError(f'Could read video {video_path}')
-        fourcc = cv2.VideoWriter_fourcc(*'mp4v')
+        fourcc = cv2.VideoWriter_fourcc(*'MJPG')
         fps = cap.get(cv2.CAP_PROP_FPS)
         width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
         height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
-        out = cv2.VideoWriter('annotated_' + video_path.name, fourcc, fps, (width, height))
+        out = cv2.VideoWriter('annotated_' + video_path.name + '.avi', fourcc, fps, (width, height))
         cap.release()
 
         for prediction_set in predictions:
