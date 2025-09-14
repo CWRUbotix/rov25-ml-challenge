@@ -106,12 +106,15 @@ class Predictor:
         if not cap.isOpened():
             raise FileNotFoundError(f'Could read video {video_path}')
         frame_idx = 0
+        num_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
         while True:
+            print(frame_idx, '/', num_frames)
             ret, frame = cap.read()
             if not ret:
                 break
             if frame_idx % frame_interval == 0:
-                frame.resize(NETWORK_IMG_SHAPE)
+                frame = cv2.resize(frame, NETWORK_IMG_SHAPE,
+                                   interpolation=cv2.INTER_LINEAR)
                 frame_idx += 1
                 yield self.predict_frame(frame, min_score)
         cap.release()
