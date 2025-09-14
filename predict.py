@@ -70,7 +70,7 @@ class Predictor:
         nms_indices = TorchNMS.nms(
             boxes=xyxy,
             scores=scores,
-            iou_thres=0.5,
+            iou_threshold=0.5,
         )
 
         prediction_set = PredictionSet([], img)
