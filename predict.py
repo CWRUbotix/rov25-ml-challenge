@@ -107,7 +107,9 @@ class Predictor:
 
         prediction_set = PredictionSet([], img)
 
-        print(results.boxes)
+        for box, prob in zip(results[0].boxes, results[0].probs, strict=True):
+            print(box, prob)
+            prediction_set.predictions.append(Prediction.fromXYWHN(box, prob))
 
         # for box_idx in result_boxes:
         #     print(boxes[box_idx])  # TODO: confirm that these are normalized here
