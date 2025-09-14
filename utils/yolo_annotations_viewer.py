@@ -81,14 +81,14 @@ def plot_class_distribution(class_counts):
     plt.tight_layout()
     plt.show()
 
-def main():
+def main(annotations_path: str, imgs_path: str):
     # Folder path containing images, annotations, and classes.txt
     # folder_path = input("Enter the folder path: ")
 
     # Load classes and annotations
     # classes = load_classes(folder_path)
     classes = ('fish',)
-    annotations = load_annotations('annotations/yolo')
+    annotations = load_annotations(annotations_path)
 
     # Ask user for the bounding box colors for each class
     class_colors = {0: 'r'}
@@ -109,7 +109,7 @@ def main():
 
     def display_image_with_annotations():
         img_id = image_ids[current_idx]
-        image = load_image('frames', img_id)
+        image = load_image(imgs_path, img_id)
         if image is not None:
             annotation_data = annotations.get(img_id, [])
             plot_annotations(ax, image, annotation_data, classes, class_colors)
@@ -135,4 +135,4 @@ def main():
     plt.show()
 
 if __name__ == "__main__":
-    main()
+    main('dataset/labels/train', 'dataset/images/train')

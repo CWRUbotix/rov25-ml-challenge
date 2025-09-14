@@ -9,8 +9,8 @@ from ultralytics import YOLO
 
 @dataclass
 class Prediction:
-    x: float
-    y: float
+    x1: float
+    y1: float
     x2: float
     y2: float
     w: float
@@ -19,21 +19,23 @@ class Prediction:
 
     @staticmethod
     def fromXYWHN(xywhn: tuple[float, float, float, float], prob: float) -> 'Prediction':
-        return Prediction(xywhn[0], xywhn[1],
-                          xywhn[0] + xywhn[2], xywhn[1] + xywhn[3],
+        wr = xywhn[2] / 2
+        hr = xywhn[3] / 2
+        return Prediction(xywhn[0] - wr, xywhn[1] - hr,
+                          xywhn[0] + wr, xywhn[1] + hr,
                           xywhn[2], xywhn[3],
                           prob)
 
     def to_scaled_xyxy(self, img_width: int, img_height: int) -> tuple[int, int, int, int]:
         return (
-            int(self.x * img_width),
-            int(self.y * img_height),
+            int(self.x1 * img_width),
+            int(self.y2 * img_height),
             int(self.x2 * img_width),
             int(self.y2 * img_height)
         )
 
     def to_xyxy(self) -> tuple[float, float, float, float]:
-        return (self.x, self.y, self.x2, self.y2)
+        return (self.x1, self.y2, self.x2, self.y2)
 
 @dataclass
 class PredictionSet:
@@ -59,46 +61,12 @@ class Predictor:
         self.model = YOLO(model_path)
 
     def predict_frame(self, img: MatLike, min_prob: float) -> PredictionSet:
-        # https://github.com/ultralytics/ultralytics/blob/main/examples/YOLOv8-OpenCV-ONNX-Python/main.py
-        # blob = cv2.dnn.blobFromImage(img, scalefactor=1 / 255, size=(640, 640),
-        #                              swapRB=True, ddepth=cv2.CV_32F)
-        # self.model.setInput(blob)
-        # outputs = self.model.forward()
-
-        # outputs = np.array([cv2.transpose(outputs[0])])
-        # rows = outputs.shape[1]
-
-        # boxes: list[tuple[float, float, float, float]] = []
-        # scores: list[float] = []
-
-        # for i in range(rows):
-        #     classes_scores = outputs[0][i][4:]
-        #     (minScore, maxScore, minClassLoc, (x, maxClassIndex)) = cv2.minMaxLoc(classes_scores)
-        #     if maxScore >= min_prob:
-        #         box = (
-        #             outputs[0][i][0] - (0.5 * outputs[0][i][2]),  # x center - width/2 = left x
-        #             outputs[0][i][1] - (0.5 * outputs[0][i][3]),  # y center - height/2 = top y
-        #             outputs[0][i][2],  # width
-        #             outputs[0][i][3],  # height
-        #         )
-        #         boxes.append(box)
-        #         scores.append(maxScore)
-
-        # # Non-max suppression
-        # result_boxes = cv2.dnn.NMSBoxes(boxes, scores, min_prob, 0.45, 0.5)
-
         results = self.model(img)
 
         prediction_set = PredictionSet([], img)
 
         for box, prob in zip(results[0].boxes.xywhn, results[0].boxes.conf, strict=True):
-            print(box, prob)
             prediction_set.predictions.append(Prediction.fromXYWHN(box, prob))
-
-        # for box_idx in result_boxes:
-        #     print(boxes[box_idx])  # TODO: confirm that these are normalized here
-        #     prediction_set.predictions.append(
-        #         Prediction.fromXYWHN(boxes[box_idx], scores[box_idx]))
 
         return prediction_set
 
