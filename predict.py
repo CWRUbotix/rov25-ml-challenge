@@ -76,39 +76,43 @@ class Predictor:
 
     def predict_frame(self, img: MatLike, min_prob: float) -> PredictionSet:
         # https://github.com/ultralytics/ultralytics/blob/main/examples/YOLOv8-OpenCV-ONNX-Python/main.py
-        blob = cv2.dnn.blobFromImage(img, scalefactor=1 / 255, size=(640, 640),
-                                     swapRB=True, ddepth=cv2.CV_32F)
-        self.model.setInput(blob)
-        outputs = self.model.forward()
+        # blob = cv2.dnn.blobFromImage(img, scalefactor=1 / 255, size=(640, 640),
+        #                              swapRB=True, ddepth=cv2.CV_32F)
+        # self.model.setInput(blob)
+        # outputs = self.model.forward()
 
-        outputs = np.array([cv2.transpose(outputs[0])])
-        rows = outputs.shape[1]
+        # outputs = np.array([cv2.transpose(outputs[0])])
+        # rows = outputs.shape[1]
 
-        boxes: list[tuple[float, float, float, float]] = []
-        scores: list[float] = []
+        # boxes: list[tuple[float, float, float, float]] = []
+        # scores: list[float] = []
 
-        for i in range(rows):
-            classes_scores = outputs[0][i][4:]
-            (minScore, maxScore, minClassLoc, (x, maxClassIndex)) = cv2.minMaxLoc(classes_scores)
-            if maxScore >= min_prob:
-                box = (
-                    outputs[0][i][0] - (0.5 * outputs[0][i][2]),  # x center - width/2 = left x
-                    outputs[0][i][1] - (0.5 * outputs[0][i][3]),  # y center - height/2 = top y
-                    outputs[0][i][2],  # width
-                    outputs[0][i][3],  # height
-                )
-                boxes.append(box)
-                scores.append(maxScore)
+        # for i in range(rows):
+        #     classes_scores = outputs[0][i][4:]
+        #     (minScore, maxScore, minClassLoc, (x, maxClassIndex)) = cv2.minMaxLoc(classes_scores)
+        #     if maxScore >= min_prob:
+        #         box = (
+        #             outputs[0][i][0] - (0.5 * outputs[0][i][2]),  # x center - width/2 = left x
+        #             outputs[0][i][1] - (0.5 * outputs[0][i][3]),  # y center - height/2 = top y
+        #             outputs[0][i][2],  # width
+        #             outputs[0][i][3],  # height
+        #         )
+        #         boxes.append(box)
+        #         scores.append(maxScore)
 
-        # Non-max suppression
-        result_boxes = cv2.dnn.NMSBoxes(boxes, scores, min_prob, 0.45, 0.5)
+        # # Non-max suppression
+        # result_boxes = cv2.dnn.NMSBoxes(boxes, scores, min_prob, 0.45, 0.5)
+
+        results = self.model(img)
 
         prediction_set = PredictionSet([], img)
 
-        for box_idx in result_boxes:
-            print(boxes[box_idx])  # TODO: confirm that these are normalized here
-            prediction_set.predictions.append(
-                Prediction.fromXYWHN(boxes[box_idx], scores[box_idx]))
+        print(results.boxes)
+
+        # for box_idx in result_boxes:
+        #     print(boxes[box_idx])  # TODO: confirm that these are normalized here
+        #     prediction_set.predictions.append(
+        #         Prediction.fromXYWHN(boxes[box_idx], scores[box_idx]))
 
         return prediction_set
 
@@ -163,5 +167,5 @@ class Predictor:
 if __name__ == '__main__':
     paths = tuple(Path('dataset/images/val').iterdir())
     predictor = Predictor()
-    for path in paths:
+    for path in (paths[0], ):
         predictor.annotate_img(path, Path('output') / path.name)
