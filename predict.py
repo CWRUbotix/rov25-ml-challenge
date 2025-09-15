@@ -6,11 +6,13 @@ from collections.abc import Iterator
 import cv2
 import numpy as np
 from cv2.typing import MatLike
+import matplotlib.pyplot as plt
 from ultralytics import YOLO
 from ultralytics.utils.nms import TorchNMS
 
 NETWORK_IMG_SHAPE = (640, 640)
 REAL_IMG_SHAPE = (1920, 1080)
+FRAME_RATE = 30
 
 @dataclass
 class Prediction:
@@ -123,7 +125,7 @@ class Predictor:
         cv2.imwrite(str(output_path), result_img)
 
     def annotate_video(self, video_path: Path, min_score: float = 0.25,
-                      frame_interval: int = 1) -> None:
+                      frame_interval: int = 1, graph_interval: int = 5) -> None:
         predictions = self.predict_video(video_path, min_score, frame_interval)
         cap = cv2.VideoCapture(str(video_path))
         if not cap.isOpened():
@@ -132,14 +134,34 @@ class Predictor:
         fps = cap.get(cv2.CAP_PROP_FPS)
         width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
         height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
-        out = cv2.VideoWriter('annotated_' + video_path.name + '.avi', fourcc, fps, (width, height))
+        out = cv2.VideoWriter('output/annotated_' + video_path.name + '.avi', fourcc, fps, (width, height))
         cap.release()
 
+        counts = []
+        seconds = []
+        frame_idx = 0
         for prediction_set in predictions:
             annotated = prediction_set.annotated_img()
             for _ in range(frame_interval):
                 out.write(annotated)
+            if frame_idx % graph_interval == 0:
+                counts.append(len(prediction_set.predictions))
+                seconds.append(frame_idx * FRAME_RATE)
+            frame_idx += frame_interval
         out.release()
+
+        with open('output/counts.csv', 'w') as csv:
+            csv.write('seconds,' + ','.join(map(str, seconds)) + '\n')
+            csv.write('counts,' + ','.join(map(str, counts)) + '\n')
+
+        plt.figure(figsize=(10, 5))
+        plt.plot(seconds, counts, marker='o')
+        plt.xlabel('Seconds')
+        plt.ylabel('Fish Count')
+        plt.title('Fish Count vs Timestamp (seconds @ 30 FPS)')
+        plt.grid(True)
+        plt.savefig('output/plot.png')
+        plt.close()
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(prog='predict.py',
@@ -158,4 +180,4 @@ if __name__ == '__main__':
     #     predictor.annotate_img(path, Path('output') / path.name)
 
     path = Path('official.mp4')
-    predictor.annotate_video(path, frame_interval=5)
+    predictor.annotate_video(path, frame_interval=5, graph_interval=5 * FRAME_RATE)
