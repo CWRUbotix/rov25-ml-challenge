@@ -1,3 +1,5 @@
+# Docstrings partially written by generative AI (Github Copilot)
+
 from pathlib import Path
 from dataclasses import dataclass
 import argparse
@@ -26,6 +28,14 @@ class Prediction:
 
     @staticmethod
     def fromXYWHN(xywhn: tuple[float, float, float, float], score: float) -> 'Prediction':
+        """
+        Create a Prediction object from normalized center x, y, width, height (xywhn) and score.
+        Args:
+            xywhn: Tuple of (center_x, center_y, width, height) normalized to [0,1].
+            score: Confidence score for the prediction.
+        Returns:
+            Prediction: The constructed Prediction object.
+        """
         wr = xywhn[2] / 2
         hr = xywhn[3] / 2
         return Prediction(xywhn[0] - wr, xywhn[1] - hr,
@@ -34,6 +44,14 @@ class Prediction:
                           score)
 
     def to_scaled_xyxy(self, img_width: int, img_height: int) -> tuple[int, int, int, int]:
+        """
+        Convert normalized coordinates to pixel coordinates for a given image size.
+        Args:
+            img_width: Width of the image in pixels.
+            img_height: Height of the image in pixels.
+        Returns:
+            Tuple of (x1, y1, x2, y2) in pixel coordinates.
+        """
         return (
             int(self.x1 * img_width),
             int(self.y1 * img_height),
@@ -42,6 +60,11 @@ class Prediction:
         )
 
     def to_xyxy(self) -> tuple[float, float, float, float]:
+        """
+        Return the bounding box as (x1, y2, x2, y2) in normalized coordinates.
+        Returns:
+            Tuple of (x1, y2, x2, y2).
+        """
         return (self.x1, self.y2, self.x2, self.y2)
 
 @dataclass
@@ -51,6 +74,13 @@ class PredictionSet:
     img_og_shape: MatLike
 
     def annotated_img(self, resize_shape_wh: tuple[int, int] | None = None) -> MatLike:
+        """
+        Draw bounding boxes and scores on the image.
+        Args:
+            resize_shape_wh: Optional (width, height) to resize the output image.
+        Returns:
+            Annotated image as a numpy array.
+        """
         if resize_shape_wh is not None:
             annotated = self.img.copy()
             annotated = cv2.resize(annotated, resize_shape_wh,
@@ -72,10 +102,24 @@ class PredictionSet:
 
 class Predictor:
     def __init__(self, model_path: str):
+        """
+        Initialize the Predictor with a YOLO model.
+        Args:
+            model_path: Path to the YOLO .pt model file.
+        """
         self.model = YOLO(model_path)
 
     def predict_frame(self, img: MatLike, min_score: float,
                       iou_threshold: float = 0.3) -> PredictionSet:
+        """
+        Run prediction on a single image frame.
+        Args:
+            img: Input image as a numpy array.
+            min_score: Minimum confidence score to keep predictions.
+            iou_threshold: IoU threshold for non-max suppression.
+        Returns:
+            PredictionSet: Predictions and image data.
+        """
         network_img = cv2.resize(img, NETWORK_IMG_SHAPE, interpolation=cv2.INTER_LINEAR)
 
         results = self.model(network_img)
@@ -97,6 +141,14 @@ class Predictor:
         return prediction_set
 
     def predict_img(self, img_path: Path, min_score: float = 0.25) -> PredictionSet:
+        """
+        Run prediction on an image file.
+        Args:
+            img_path: Path to the image file.
+            min_score: Minimum confidence score to keep predictions.
+        Returns:
+            PredictionSet: Predictions and image data.
+        """
         img = cv2.imread(str(img_path))
         if img is None:
             raise FileNotFoundError(f'Could read image {img_path}')
@@ -104,6 +156,15 @@ class Predictor:
 
     def predict_video(self, video_path: Path, min_score: float = 0.25,
                       frame_interval: int = 1) -> Iterator[PredictionSet]:
+        """
+        Run prediction on a video file, yielding predictions for each frame.
+        Args:
+            video_path: Path to the video file.
+            min_score: Minimum confidence score to keep predictions.
+            frame_interval: Process every Nth frame.
+        Yields:
+            PredictionSet for each processed frame.
+        """
         cap = cv2.VideoCapture(str(video_path))
         if not cap.isOpened():
             raise FileNotFoundError(f'Could read video {video_path}')
@@ -120,12 +181,27 @@ class Predictor:
         cap.release()
 
     def annotate_img(self, input_path: Path, output_path: Path, min_score: float = 0.25) -> None:
+        """
+        Annotate an image file with predictions and save the result.
+        Args:
+            input_path: Path to the input image.
+            output_path: Path to save the annotated image.
+            min_score: Minimum confidence score to keep predictions.
+        """
         prediction_set = self.predict_img(input_path, min_score)
         result_img = prediction_set.annotated_img(REAL_IMG_SHAPE)
         cv2.imwrite(str(output_path), result_img)
 
     def annotate_video(self, video_path: Path, min_score: float = 0.25,
                       frame_interval: int = 1, graph_interval: int = 5) -> None:
+        """
+        Annotate a video file with predictions, save annotated video and plot fish counts.
+        Args:
+            video_path: Path to the video file.
+            min_score: Minimum confidence score to keep predictions.
+            frame_interval: Process every Nth frame.
+            graph_interval: Interval for updating the fish count graph.
+        """
         predictions = self.predict_video(video_path, min_score, frame_interval)
         cap = cv2.VideoCapture(str(video_path))
         if not cap.isOpened():
@@ -164,6 +240,12 @@ class Predictor:
         plt.close()
 
     def track_video(self, video_path: Path, min_score: float = 0.25) -> None:
+        """
+        (EXPERIMENTAL) Run YOLO tracking on a video and save the output.
+        Args:
+            video_path: Path to the video file.
+            min_score: Minimum confidence score to keep predictions.
+        """
         self.model.track(str(video_path), save=True, conf=min_score)
 
 if __name__ == '__main__':
