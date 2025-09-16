@@ -58,8 +58,6 @@ if __name__ == '__main__':
     if len(sys.argv) > 1:
         model_path = sys.argv[1]
 
-    # model_architecture = 'tf_efficientdet_d2'
-    # for architecture in ('tf_efficientdet_lite0', 'tf_efficientdet_lite1', 'efficientdet_d0', 'tf_efficientdet_d0', 'tf_efficientdet_d0_ap', 'efficientdet_q0', 'tf_efficientdet_lite2', 'efficientdet_d1', 'tf_efficientdet_lite3', 'tf_efficientdet_d1', 'tf_efficientdet_d1_ap', 'efficientdet_q1', 'cspresdext50pan', 'resdet50', 'efficientdet_q2', 'cspresdet50', 'tf_efficientdet_d2', 'tf_efficientdet_lite3x', 'tf_efficientdet_lite4', 'tf_efficientdet_d2_ap', 'cspdarkdet53m', 'efficientdetv2_dt', 'tf_efficientdet_d3', 'tf_efficientdet_d3_ap', 'tf_efficientdet_d4', 'efficientdetv2_ds', 'tf_efficientdet_d4_ap', 'tf_efficientdet_d5', 'tf_efficientdet_d6', 'tf_efficientdet_d5_ap', 'tf_efficientdet_d7', 'tf_efficientdet_d7x'):
     for architecture in ('tf_efficientdet_d2', 'tf_efficientdet_d2_ap'):
         try:
             model = load_model(model_path, NUM_CLASSES, architecture)

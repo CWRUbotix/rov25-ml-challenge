@@ -9,9 +9,7 @@ We qualitatively evaluated the performance of the trained YOLO-Fish network on t
 ![Example YOLO-Fish frame](readme/darknet_frame.png)
 *Figure I: Example frame processed by YOLO-Fish, missing several large fish*
 
-TODO: DARKNET INSTALLATION INSTRUCTIONS
-
-Considering the decent performance of YOLO-Fish and our team's past experience with YOLO networks, we chose to fine tune YOLOv8 and YOLOv11 nano models on our labeled dataset. We also trained an EfficientDet model, a network often used to compare with YOLO networks. We partitioned our dataset with a 60%/20%/20% training/validation/testing split and resized the video frames to 640x640. We trained the YOLO networks for 50 epochs with a batch size of 16 on an NVIDIA 4070 graphics card. As per *Table I*, we achieved a mean average precision of roughly 0.8 for both YOLO models at an IoU of 0.5, dropping to roughly 0.5 at higher IoUs. Our YOLO models therefore performed far better than YOLO-Fish (at 0.43 mAP 50 and 0.3 mAP 50-95 measured on our test split). EffDet drastically underperformed in testing.
+Considering the decent performance of YOLO-Fish and our team's past experience with YOLO networks, we chose to fine tune YOLOv8 and YOLOv11 nano models on our labeled dataset. We also trained an EfficientDet model (available [here](https://huggingface.co/ktm06/efficientdet-fishclassification-v1)), a network often compared with YOLO networks. We partitioned our dataset with a 60%/20%/20% training/validation/testing split and resized the video frames to 640x640. We trained the YOLO networks for 50 epochs with a batch size of 16 on an NVIDIA 4070 graphics card. As per *Table I*, we achieved a mean average precision of roughly 0.8 for both YOLO models at an IoU of 0.5, dropping to roughly 0.5 at higher IoUs. Our YOLO models therefore performed far better than YOLO-Fish (at 0.43 mAP 50 and 0.3 mAP 50-95 measured on our test split). EffDet drastically underperformed in testing.
 
 | Model     | mAP 50 | mAP 50-95 |
 | --------- | ------ | --------- |
@@ -121,9 +119,6 @@ python train.py
 ```
 
 Replace the `dataset/images/` and `dataset/labels/` directories with your own data to train for a different application. Edit the `train.py` file to use a different YOLO version.
-
-# Misc
-EfficientDet model can be found for download here: https://huggingface.co/ktm06/efficientdet-fishclassification-v1
 
 
 [^1]: Cui, M., Liu, X., Liu, H., Zhao, J., Li, D. and Wang, W. (2025), Fish Tracking, Counting, and Behaviour Analysis in Digital Aquaculture: A Comprehensive Survey. Rev Aquac, 17: e13001. [https://doi.org/10.1111/raq.13001](https://doi.org/10.1111/raq.13001)
