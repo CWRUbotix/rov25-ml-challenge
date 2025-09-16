@@ -6,7 +6,7 @@ from pathlib import Path
 import sys
 import torchvision.transforms as T
 
-model_path = 'model_d2.pt'
+model_path = 'effdet.pt'
 IMAGE_FOLDER = 'dataset/images/test'
 OUTPUT_FOLDER = 'output/effdet_predictions'
 IMG_SIZE = 768  # D2 default
@@ -16,7 +16,7 @@ DEVICE = 'cuda' if torch.cuda.is_available() else 'cpu'
 def load_model(model_path, num_classes):
     config = get_efficientdet_config('tf_efficientdet_d2')
     config.num_classes = num_classes
-    config.image_size = IMG_SIZE
+    config.image_size = (IMG_SIZE, IMG_SIZE)
 
     net = EfficientDet(config, pretrained_backbone=False)
     net.class_net = HeadNet(config, num_outputs=config.num_classes)
