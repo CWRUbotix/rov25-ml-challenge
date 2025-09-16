@@ -87,11 +87,11 @@ def main(annotations_path: str, imgs_path: str):
 
     # Load classes and annotations
     # classes = load_classes(folder_path)
-    classes = ('fish',)
+    classes = ('fish', 'fish')
     annotations = load_annotations(annotations_path)
 
     # Ask user for the bounding box colors for each class
-    class_colors = {0: 'r'}
+    class_colors = {0: 'r', 1: 'r'}
     # for i, class_name in enumerate(classes):
     #     color = input(f"Enter the color for {class_name} (e.g., 'r', 'g', 'b'): ")
     #     class_colors[i] = color
@@ -135,4 +135,5 @@ def main(annotations_path: str, imgs_path: str):
     plt.show()
 
 if __name__ == "__main__":
-    main('dataset/labels/train', 'dataset/images/train')
+    # main('dataset/labels/test', 'dataset/images/test')
+    main('output/effdet_predictions', 'dataset/images/test')

@@ -43,7 +43,7 @@ def predict_and_save(model, image_path, output_path):
 
     with open(output_path, 'w') as f:
         for x1, y1, x2, y2, score, label in preds:
-            if score < 0.3:
+            if score < 0.01:
                 continue
 
             # normalize to YOLO format
@@ -52,7 +52,7 @@ def predict_and_save(model, image_path, output_path):
             bw = (x2 - x1) / w
             bh = (y2 - y1) / h
 
-            f.write(f'{label} {x_center:.6f} {y_center:.6f} {bw:.6f} {bh:.6f}\n')
+            f.write(f'{0} {x_center:.6f} {y_center:.6f} {bw:.6f} {bh:.6f}\n')
 
 if __name__ == '__main__':
     if len(sys.argv) > 1:
