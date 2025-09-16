@@ -5,6 +5,7 @@ yolo11n.pt
 yolov8n.pt
 *.cache
 *.pt
+!weights/*.pt
 *.mp4
 
 # Byte-compiled / optimized / DLL files
