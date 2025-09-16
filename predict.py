@@ -146,7 +146,7 @@ class Predictor:
                 out.write(annotated)
             if frame_idx % graph_interval == 0:
                 counts.append(len(prediction_set.predictions))
-                seconds.append(frame_idx * FRAME_RATE)
+                seconds.append(frame_idx / FRAME_RATE)
             frame_idx += frame_interval
         out.release()
 
