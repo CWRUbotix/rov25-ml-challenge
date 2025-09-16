@@ -80,6 +80,13 @@ We chose to submit our YOLO v11 model to the competition. *Figure V* graphs the 
 
 *Table III: Fish counts for example video in 5 second intervals*
 
+## Future Work
+We attempted fish *tracking* (not just detection) using YOLO-Fish (the DarkNet model) and [SORT](https://github.com/abewley/sort)[^7] baseline tracking. Even an algorithm as simple as SORT was sufficient to have a visible "smoothing" affect, removing many 1-2 frame false positives. With some more time it would be interesting to apply SORT to our YOLOv11 output, or to experiment with [Ultralytics' tracking method](https://docs.ultralytics.com/modes/track/).
+
+Applying an underwater dehazing algorithm[^8] to the video input before training might also make it easier for the network to learn features. Something as simple as the Dark Channel Prior or CLAHE might be enough to improve the clarity of distant fish.
+
+Finally, training on a wider dataset of black sea bass videos would undoubtedly improve of the usefulness of our model. We were only able to find fish classification datasets and one other (unlabeled) NOAA video to supplement the provided video.
+
 ## Usage
 ### Setup
  1. Install [CUDA 12.1](https://developer.nvidia.com/cuda-12-1-0-download-archive). Note that this version of CUDA is outdated. Our code may work on up-to-date CUDA, but it was only tested on 12.1.
@@ -132,3 +139,7 @@ Replace the `dataset/images/` and `dataset/labels/` directories with your own da
 [^5]: N. Liu, Y. Long, C. Zou, Q. Niu, L. Pan, and H. Wu, "Adcrowdnet: An Attention-Injective Deformable Convolutional Network for Crowd Understanding," in Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition, Long Beach, CA (2019), 3225–3234.
 
 [^6]: A. A. Muksit, F. Hasan, Md. F. Hasan Bhuiyan Emon, M. R. Haque, A. R. Anwary, and S. Shatabda, "YOLO-Fish: A robust fish detection model to detect fish in realistic underwater environment," Ecological Informatics, vol. 72, p. 101847, 2022, doi: https://doi.org/10.1016/j.ecoinf.2022.101847.
+
+[^7]: A. Bewley, Z. Ge, L. Ott, F. Ramos, and B. Upcroft, "Simple online and realtime tracking," Sep. 2016. doi: 10.1109/icip.2016.7533003.
+
+[^8]: X. Shuang, J. Zhang, and Y. Tian, "Algorithms for improving the quality of underwater optical images: A comprehensive review," Signal Processing, vol. 219, p. 109408, 2024, doi: https://doi.org/10.1016/j.sigpro.2024.109408.
