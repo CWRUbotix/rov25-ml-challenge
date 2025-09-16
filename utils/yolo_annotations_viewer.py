@@ -31,6 +31,7 @@ def load_image(folder_path, image_id):
         img_path = os.path.join(folder_path, image_id + ext)
         if os.path.exists(img_path):
             img = cv2.imread(img_path)
+            img = cv2.resize(img, (1620, 1080), img)
             return img
     return None
 
@@ -139,4 +140,4 @@ def main(annotations_path: str, imgs_path: str):
 
 if __name__ == "__main__":
     # main('dataset/labels/test', 'dataset/images/test')
-    main('output/effdet_predictions/tf_efficientdet_d2_ap', 'dataset/images/test')
+    main('output/darknet', 'dataset/images/test')
