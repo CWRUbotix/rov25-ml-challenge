@@ -186,5 +186,5 @@ if __name__ == '__main__':
     #     predictor.annotate_img(path, Path('output') / path.name)
 
     path = Path(parsed_args.video_path)
-    predictor.track_video(path)
-    # predictor.annotate_video(path, frame_interval=1, graph_interval=5 * FRAME_RATE)
+    # predictor.track_video(path)
+    predictor.annotate_video(path, frame_interval=1, graph_interval=5 * FRAME_RATE)
