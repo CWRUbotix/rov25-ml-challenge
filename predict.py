@@ -129,7 +129,7 @@ class Predictor:
         predictions = self.predict_video(video_path, min_score, frame_interval)
         cap = cv2.VideoCapture(str(video_path))
         if not cap.isOpened():
-            raise FileNotFoundError(f'Could read video {video_path}')
+            raise FileNotFoundError(f'Could not read video {video_path}')
         fourcc = cv2.VideoWriter_fourcc(*'MJPG')
         fps = cap.get(cv2.CAP_PROP_FPS)
         width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
