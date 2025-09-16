@@ -42,16 +42,11 @@ def predict_and_save(model, image_path, output_path):
     with torch.no_grad():
         preds = model(img_tensor)[0]
 
-    boxes = preds['boxes'].cpu().numpy()  # (x1, y1, x2, y2)
-    scores = preds['scores'].cpu().numpy()
-    labels = preds['labels'].cpu().numpy()
-
     with open(output_path, 'w') as f:
-        for box, score, label in zip(boxes, scores, labels):
+        for x1, y1, x2, y2, score, label in preds:
             if score < 0.3:
                 continue
 
-            x1, y1, x2, y2 = box
             # normalize to YOLO format
             x_center = ((x1 + x2) / 2) / w
             y_center = ((y1 + y2) / 2) / h
