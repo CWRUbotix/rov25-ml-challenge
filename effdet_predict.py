@@ -30,7 +30,6 @@ def load_model(model_path, num_classes):
 transform = T.Compose([
     T.ToTensor(),
     T.Resize((IMG_SIZE, IMG_SIZE)),
-    T.ToTensor(),
 ])
 
 def predict_and_save(model, image_path, output_path):
