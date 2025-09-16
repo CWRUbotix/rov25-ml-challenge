@@ -3,6 +3,8 @@ runs/
 yolo11n.pt
 yolov8n.pt
 *.cache
+*.pt
+*.mp4
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
