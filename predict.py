@@ -163,6 +163,9 @@ class Predictor:
         plt.savefig('output/plot.png')
         plt.close()
 
+    def track_video(self, video_path: Path, min_score: float = 0.25) -> None:
+        self.model.track(str(video_path), save=True, conf=min_score)
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(prog='predict.py',
                                      description='Make predictions with a Yolo model')
@@ -183,4 +186,5 @@ if __name__ == '__main__':
     #     predictor.annotate_img(path, Path('output') / path.name)
 
     path = Path(parsed_args.video_path)
-    predictor.annotate_video(path, frame_interval=1, graph_interval=5 * FRAME_RATE)
+    predictor.track_video(path)
+    # predictor.annotate_video(path, frame_interval=1, graph_interval=5 * FRAME_RATE)
