@@ -167,9 +167,12 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(prog='predict.py',
                                      description='Make predictions with a Yolo model')
 
-    parser.add_argument('-m', '--model-path', required=True,
+    parser.add_argument('-m', '--model-path', required=False,
                         help='Path to model .pt file (i.e. runs/detect/train/weights/last.pt)',
-                        default='runs/detect/train/weights/last.pt')
+                        default='weights/yolov11-finetuned.pt')
+
+    parser.add_argument('-v', '--video-path', required=True,
+                        help='Path to video (should be 1920x1080 or will be distorted)')
 
     parsed_args = parser.parse_args()
     predictor = Predictor(parsed_args.model_path)
@@ -179,5 +182,5 @@ if __name__ == '__main__':
     # for path in paths:
     #     predictor.annotate_img(path, Path('output') / path.name)
 
-    path = Path('official.mp4')
-    predictor.annotate_video(path, frame_interval=5, graph_interval=5 * FRAME_RATE)
+    path = Path(parsed_args.video_path)
+    predictor.annotate_video(path, frame_interval=1, graph_interval=5 * FRAME_RATE)

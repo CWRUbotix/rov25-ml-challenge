@@ -38,7 +38,7 @@ def load_pred_boxes(filepath: Path, img_size):
     return np.array(boxes)
 
 GT_PATH = Path('dataset') / 'labels' / 'test'
-PRED_PATH = Path('output') / 'effdet_predictions'
+PRED_PATH = Path('output') / 'effdet_predictions' / 'tf_efficientdet_d2_ap'
 
 if __name__ == '__main__':
     maps50: list[float] = []

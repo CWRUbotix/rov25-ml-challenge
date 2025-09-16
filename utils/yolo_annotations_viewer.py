@@ -139,4 +139,4 @@ def main(annotations_path: str, imgs_path: str):
 
 if __name__ == "__main__":
     # main('dataset/labels/test', 'dataset/images/test')
-    main('output/effdet_predictions', 'dataset/images/test')
+    main('output/effdet_predictions/tf_efficientdet_d2_ap', 'dataset/images/test')
