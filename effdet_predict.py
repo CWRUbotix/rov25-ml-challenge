@@ -21,7 +21,7 @@ def load_model(model_path, num_classes):
     net = EfficientDet(config, pretrained_backbone=False)
     net.class_net = HeadNet(config, num_outputs=config.num_classes)
     model = DetBenchPredict(net)
-    checkpoint = torch.load(model_path, map_location=DEVICE)
+    checkpoint = torch.load(model_path, map_location=DEVICE, weights_only=True)
     model.load_state_dict(checkpoint)
     model = model.to(DEVICE)
     model.eval()
@@ -29,12 +29,12 @@ def load_model(model_path, num_classes):
 
 transform = T.Compose([
     T.ToTensor(),
-    T.Resize((IMG_SIZE, IMG_SIZE)),
 ])
 
 def predict_and_save(model, image_path, output_path):
     img = cv2.imread(image_path)
     img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+    img = cv2.resize(img, (IMG_SIZE, IMG_SIZE))
     h, w, _ = img.shape
 
     img_tensor = transform(img).unsqueeze(0).to(DEVICE)
