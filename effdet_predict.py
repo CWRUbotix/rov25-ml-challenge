@@ -65,9 +65,10 @@ if __name__ == '__main__':
         except RuntimeError:
             continue
         print(architecture)
-        Path(OUTPUT_FOLDER).mkdir(parents=True, exist_ok=True)
+        architecture_folder = Path(OUTPUT_FOLDER) / architecture
+        architecture_folder.mkdir(parents=True, exist_ok=True)
 
         for img_path in Path(IMAGE_FOLDER).iterdir():
-            out_file = Path(OUTPUT_FOLDER) / architecture / (img_path.stem + '.txt')
+            out_file = architecture_folder / (img_path.stem + '.txt')
             predict_and_save(model, img_path, out_file)
             print(f'Saved predictions for {img_path.name} -> {out_file}')
