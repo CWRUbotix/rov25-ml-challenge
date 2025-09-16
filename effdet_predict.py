@@ -13,8 +13,8 @@ IMG_SIZE = 768  # D2 default
 NUM_CLASSES = 1
 DEVICE = 'cuda' if torch.cuda.is_available() else 'cpu'
 
-def load_model(model_path, num_classes):
-    config = get_efficientdet_config('tf_efficientdet_d2')
+def load_model(model_path, num_classes, model_architecture: str):
+    config = get_efficientdet_config(model_architecture)
     config.num_classes = num_classes
     config.image_size = (IMG_SIZE, IMG_SIZE)
 
@@ -58,10 +58,12 @@ if __name__ == '__main__':
     if len(sys.argv) > 1:
         model_path = sys.argv[1]
 
-    model = load_model(model_path, NUM_CLASSES)
-    Path(OUTPUT_FOLDER).mkdir(parents=True, exist_ok=True)
+    # model_architecture = 'tf_efficientdet_d2'
+    for architecture in ('tf_efficientdet_lite0', 'tf_efficientdet_lite1', 'efficientdet_d0', 'tf_efficientdet_d0', 'tf_efficientdet_d0_ap', 'efficientdet_q0', 'tf_efficientdet_lite2', 'efficientdet_d1', 'tf_efficientdet_lite3', 'tf_efficientdet_d1', 'tf_efficientdet_d1_ap', 'efficientdet_q1', 'cspresdext50pan', 'resdet50', 'efficientdet_q2', 'cspresdet50', 'tf_efficientdet_d2', 'tf_efficientdet_lite3x', 'tf_efficientdet_lite4', 'tf_efficientdet_d2_ap', 'cspdarkdet53m', 'efficientdetv2_dt', 'tf_efficientdet_d3', 'tf_efficientdet_d3_ap', 'tf_efficientdet_d4', 'efficientdetv2_ds', 'tf_efficientdet_d4_ap', 'tf_efficientdet_d5', 'tf_efficientdet_d6', 'tf_efficientdet_d5_ap', 'tf_efficientdet_d7', 'tf_efficientdet_d7x'):
+        model = load_model(model_path, NUM_CLASSES, architecture)
+        Path(OUTPUT_FOLDER).mkdir(parents=True, exist_ok=True)
 
-    for img_path in Path(IMAGE_FOLDER).iterdir():
-        out_file = Path(OUTPUT_FOLDER) / (img_path.stem + '.txt')
-        predict_and_save(model, img_path, out_file)
-        print(f'Saved predictions for {img_path.name} -> {out_file}')
+        for img_path in Path(IMAGE_FOLDER).iterdir():
+            out_file = Path(OUTPUT_FOLDER) / architecture / (img_path.stem + '.txt')
+            predict_and_save(model, img_path, out_file)
+            print(f'Saved predictions for {img_path.name} -> {out_file}')
