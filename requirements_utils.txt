@@ -2,3 +2,5 @@ opencv-python
 matplotlib
 pyqt6
 scikit-learn
+mean_average_precision
+numpy

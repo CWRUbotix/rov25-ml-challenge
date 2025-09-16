@@ -41,7 +41,10 @@ def plot_annotations(ax, image, annotation_data, classes, colors):
     ax.imshow(cv2.cvtColor(image, cv2.COLOR_BGR2RGB))
 
     for ann in annotation_data:
-        class_id, x_center, y_center, width, height = map(float, ann)
+        if len(ann) == 5:
+            class_id, x_center, y_center, width, height = map(float, ann)
+        else:
+            class_id, conf, x_center, y_center, width, height = map(float, ann)
         class_id = int(class_id)
 
         # Convert YOLO format to bounding box
